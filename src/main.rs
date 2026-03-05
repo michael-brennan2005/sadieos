@@ -11,10 +11,12 @@ use blog_os::println;
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
 
+    blog_os::init();
+
     #[cfg(test)]
     test_main();
 
-    loop {}
+    blog_os::hlt_loop();
 }
 
 /// This function is called on panic.
@@ -22,7 +24,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    blog_os::hlt_loop();
 }
 
 #[cfg(test)]
