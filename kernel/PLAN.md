@@ -1,0 +1,12 @@
+- PLAN: get the rust hello world program to work
+
+- Processes
+    - (DONE) Embed file for now to make things easy (no filesystem)
+    - Need some way to do ELF parsing/loading
+        - Goal: VGA debug print what needs to go where, see if we can cross validate with elfinfo or sumn
+    - Need way to create page table for program, then map & load memory
+        - Goal: ???
+    - Direct execution (from OSTEP - release into usermode, have syscall interrupts)
+        - Goal: Program runs and it triggers a fault on syscall (when it tries to print)
+    - Basic syscall mocks: Read and write for stdout (straight to VGA buffer for now)
+        - Goal: It prints

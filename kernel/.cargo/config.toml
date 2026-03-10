@@ -2,10 +2,10 @@
 runner = "bootimage runner"
 
 [build]
-target = "x86_64-blog_os.json"
+target = "x86_64-sd_kernel.json"
 
 [unstable]
 json-target-spec = true
 build-std-features = ["compiler-builtins-mem"]
-build-std = ["core", "compiler_builtins"]
+build-std = ["core", "compiler_builtins", "alloc"]
 panic-abort-tests = true
