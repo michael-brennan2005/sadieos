@@ -3,29 +3,7 @@ name = "kernel"
 version = "0.1.0"
 edition = "2024"
 
-[[bin]]
-name = "kernel"
-test = false
-bench = false
-
 [dependencies]
-bootloader_api = "0.11"
-volatile = "0.2.6"
-spin = "0.5.2"
-x86_64 = "0.14.2"
-uart_16550 = "0.2.0"
-pic8259 = "0.11.0"
-pc-keyboard = "0.8.0"
-linked_list_allocator = "0.10.5"
-elf = { version = "0.8.0", default-features = false }
-# noto-sans-mono-bitmap = "0.3.2"
-
-[dependencies.lazy_static]
-version = "1.0"
-features = ["spin_no_std"]
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
+bootloader_api = "0.11.12"
+uart_16550 = "0.4.0"
+x86_64 = "0.15.2"
