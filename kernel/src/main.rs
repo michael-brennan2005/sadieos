@@ -1,7 +1,7 @@
 #![no_std] // don't link the Rust standard library
 #![no_main] // disable all Rust-level entry points
 
-use bootloader_api::{BootInfo, entry_point};
+use bootloader_api::{BootInfo, BootloaderConfig, config::Mapping, entry_point};
 use core::fmt::Write;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -30,7 +30,14 @@ pub fn serial() -> uart_16550::SerialPort {
     port
 }
 
-entry_point!(kernel_main);
+pub const BOOTLOADER_CONFIG: BootloaderConfig = {
+    let mut config = BootloaderConfig::new_default();
+    config.mappings.physical_memory = Some(Mapping::Dynamic);
+    config.mappings.dynamic_range_start = Some(0xffff_8000_0000_0000);
+    config
+};
+
+entry_point!(kernel_main, config = &BOOTLOADER_CONFIG);
 
 fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     let mut port = serial();
