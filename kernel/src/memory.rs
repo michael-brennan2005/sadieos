@@ -36,22 +36,20 @@ unsafe fn active_level_4_table(physical_memory_offset: VirtAddr)
 }
 
 /// Translates the given virtual address to the mapped physical address, or
-/// `None` if the address is not mapped.
+/// `None` if the address is not mapped, using the page table at the given physical address.
 ///
 /// This function is unsafe because the caller must guarantee that the
 /// complete physical memory is mapped to virtual memory at the passed
 /// `physical_memory_offset`.
-pub unsafe fn translate_addr(addr: VirtAddr, physical_memory_offset: VirtAddr)
-    -> Option<PhysAddr>
-{
-    translate_addr_inner(addr, physical_memory_offset)
+pub unsafe fn translate_addr(addr: VirtAddr, table: PhysAddr, physical_memory_offset: VirtAddr) 
+    -> Option<PhysAddr> {
+    translate_addr_inner(addr, table, physical_memory_offset)
 }
 
-fn translate_addr_inner(addr: VirtAddr, physical_memory_offset: VirtAddr)
-    -> Option<PhysAddr>
-{
+fn translate_addr_inner(addr: VirtAddr, table: PhysAddr, physical_memory_offset: VirtAddr) 
+    -> Option<PhysAddr> {
     // read active level 4 frame from CR3
-    let (level_4_table_frame, _) = Cr3::read();
+    let level_4_table_frame = PhysFrame::containing_address(table);
 
     let table_indexes = [
         addr.p4_index(), addr.p3_index(), addr.p2_index(), addr.p1_index()
