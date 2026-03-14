@@ -30,8 +30,6 @@ fn main() {
     let mut cmd = Command::new("qemu-system-x86_64");
     // print serial output to the shell
     cmd.arg("-serial").arg("mon:stdio");
-    // don't display video output
-    cmd.arg("-display").arg("none");
     // enable the guest to exit qemu
     cmd.arg("-device")
         .arg("isa-debug-exit,iobase=0xf4,iosize=0x04");
