@@ -24,3 +24,6 @@
 
     - Move debug printing to a serial line
     - Initializing pages for process memory and copying data should be moved to memory.rs functions
+
+
+- 

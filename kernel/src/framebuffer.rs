@@ -1,7 +1,9 @@
 /// Shamelessly stolen from rust-osdev/bootloader crate. Basically VGA emulation rn.
-use bootloader_api::info::{FrameBufferInfo, PixelFormat};
+use bootloader_api::info::{FrameBuffer, FrameBufferInfo, PixelFormat};
+use spin::Mutex;
 use core::{fmt, ptr};
 use font_constants::BACKUP_CHAR;
+use lazy_static::lazy_static;
 use noto_sans_mono_bitmap::{
     FontWeight, RasterHeight, RasterizedChar, get_raster, get_raster_width,
 };
@@ -145,6 +147,10 @@ impl FrameBufferWriter {
 unsafe impl Send for FrameBufferWriter {}
 unsafe impl Sync for FrameBufferWriter {}
 
+lazy_static! {
+    pub static ref FB_WRITER: Mutex<Option<FrameBufferWriter>> = Mutex::new(None);
+}
+
 impl fmt::Write for FrameBufferWriter {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         for c in s.chars() {
@@ -152,4 +158,33 @@ impl fmt::Write for FrameBufferWriter {
         }
         Ok(())
     }
+}
+
+pub fn init_fb(fb: FrameBuffer) {
+    let info = fb.info();
+    let buffer = fb.into_buffer();
+    FB_WRITER.lock().replace(FrameBufferWriter::new(buffer, info));
+}
+
+#[macro_export]
+macro_rules! fbprint {
+    ($($arg:tt)*) => ($crate::framebuffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! fbprintln {
+    () => ($crate::fbprint!("\n"));
+    ($($arg:tt)*) => ($crate::fbprint!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        if let Some(writer) = FB_WRITER.lock().as_mut() {
+            writer.write_fmt(args).unwrap();
+        }
+    });
 }

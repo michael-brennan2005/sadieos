@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 bootloader_api = "0.11.12"
+pc-keyboard = "0.8.0"
+pic8259 = "0.11.0"
 spin = "0.10.0"
 uart_16550 = "0.4.0"
 x86_64 = "0.15.2"

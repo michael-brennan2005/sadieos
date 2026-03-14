@@ -1,5 +1,6 @@
 #![no_std] // don't link the Rust standard library
 #![no_main] // disable all Rust-level entry points
+#![feature(abi_x86_interrupt)] // needed for "x86-interrupt" call-conv
 
 use bootloader_api::{BootInfo, BootloaderConfig, config::Mapping, entry_point};
 use x86_64::instructions::hlt;
@@ -9,6 +10,7 @@ use crate::framebuffer::FrameBufferWriter;
 
 pub mod framebuffer;
 pub mod serial;
+pub mod interrupts;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -43,22 +45,21 @@ entry_point!(kernel_main, config = &BOOTLOADER_CONFIG);
 fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     sprintln!("Entered kernel with boot info: {:?}", boot_info);
     
-    let mut fbw = if let Some(fb) = boot_info.framebuffer.take() {
-        let info = fb.info();
-        Some(FrameBufferWriter::new(fb.into_buffer(), info))
-    } else {
-        None
-    };
-    
-    if let Some(mut fbw) = fbw {
-        fbw.write_str("Hello, World!").unwrap();
+    interrupts::init_gdt();
+    interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize(); };
+    x86_64::instructions::interrupts::enable();
+
+    if let Some(fb) = boot_info.framebuffer.take() {
+        framebuffer::init_fb(fb);
     }
 
-    sprintln!("\n=(^.^)= meow\n");
+    fbprint!("\n=(^.^)= meow\n");
 
     loop {
         hlt();
     }
+
     exit_qemu(QemuExitCode::Success);
 }
 
